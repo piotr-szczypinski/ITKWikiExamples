@@ -42,7 +42,7 @@ int main(int, char *[])
   // This crashes the program because the smart pointer created in the function goes out of scope and gets deleted
   // because it is returned as a normal pointer.
   // std::cout << pointer->GetLargestPossibleRegion() << std::endl;
-  pointer = ITK_NULLPTR; // Here to silence warning
+  pointer = nullptr; // Here to silence warning
   }
 
   {
@@ -50,7 +50,7 @@ int main(int, char *[])
   // This crashes the program because though the function returned a ::Pointer, it was not stored
   // anywhere so the reference count was not increased, so it got deleted.
   // std::cout << pointer->GetLargestPossibleRegion() << std::endl;
-  pointer = ITK_NULLPTR; // Here to silence warning
+  pointer = nullptr; // Here to silence warning
   }
 
   {
