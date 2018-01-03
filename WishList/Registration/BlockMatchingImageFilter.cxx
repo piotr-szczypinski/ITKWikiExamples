@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
   p0[0]=  40.0; p0[1]= 40.0;
   p1[0]=  40.0; p1[1]= 60.0;
   p2[0]=  60.0; p2[1]= 40.0;
-  p3[0]=  60.0; p2[1]= 60.0;
+  p3[0]=  60.0; p3[1]= 60.0;
 
   points->InsertElement(0, p0);
   points->InsertElement(1, p1);
