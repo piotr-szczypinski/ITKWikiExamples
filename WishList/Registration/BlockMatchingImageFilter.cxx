@@ -6,30 +6,29 @@
 
 typedef itk::Image<unsigned char, 2> ImageType;
 
-static void CreateImage(ImageType::Pointer image, const unsigned int x);
+static void CreateImage(ImageType::Pointer image, const unsigned int margin);
 
 int main(int argc, char *argv[])
 {
   // Create input images
   ImageType::Pointer fixedImage = ImageType::New();
-  CreateImage(fixedImage, 40);
+  CreateImage(fixedImage, 43);
 
   ImageType::Pointer movingImage = ImageType::New();
-  CreateImage(movingImage, 50);
+  CreateImage(movingImage, 40);
 
-//  typedef  itk::ImageFileWriter<ImageType> WriterType;
-//  WriterType::Pointer writer = WriterType::New();
-//  writer->SetFileName("input.png");
-//  writer->SetInput(input);
-//  writer->Update();
+  //  typedef  itk::ImageFileWriter<ImageType> WriterType;
+  //  WriterType::Pointer writer = WriterType::New();
+  //  writer->SetFileName("input.png");
+  //  writer->SetInput(input);
+  //  writer->Update();
 
   //  typedef itk::BlockMatchingImageFilter<ImageType, ImageType, PointSetType> BlockMatchingImageFilterType;
   typedef itk::BlockMatchingImageFilter<ImageType> BlockMatchingImageFilterType;
   BlockMatchingImageFilterType::Pointer blockMatchingImageFilter =
-        BlockMatchingImageFilterType::New();
+          BlockMatchingImageFilterType::New();
 
   // Generate feature points
-//  typedef itk::PointSet< float, 2>   PointSetType;
   typedef BlockMatchingImageFilterType::FeaturePointsType   PointSetType;
   typedef PointSetType::PointType PointType;
   typedef PointSetType::PointsContainerPointer PointsContainerPointer;
@@ -49,20 +48,43 @@ int main(int argc, char *argv[])
   points->InsertElement(2, p2);
   points->InsertElement(3, p3);
 
+  // Sets block radius
+  ImageType::SizeType radius;
+  radius.Fill(2);
+  blockMatchingImageFilter->SetBlockRadius(radius);
+  // Sets search radius
+  radius.Fill(5);
+  blockMatchingImageFilter->SetSearchRadius(radius);
+
+  // Sets the images and landmarks
   blockMatchingImageFilter->SetFixedImage(fixedImage);
   blockMatchingImageFilter->SetMovingImage(movingImage);
   blockMatchingImageFilter->SetFeaturePoints(pointSet);
-  blockMatchingImageFilter->UpdateLargestPossibleRegion();
+  //blockMatchingImageFilter->UpdateLargestPossibleRegion();
+  blockMatchingImageFilter->Update();
 
+  // Gets results
   typename BlockMatchingImageFilterType::DisplacementsType * displacements =
           blockMatchingImageFilter->GetDisplacements();
+  typename BlockMatchingImageFilterType::SimilaritiesType * similarities =
+          blockMatchingImageFilter->GetSimilarities();
 
-  std::cout << "There are " << displacements->GetNumberOfPoints() << " displacements." << std::endl;
+  std::cout << "There are " << displacements->GetNumberOfPoints() << " landmarks:" << std::endl;
+
+  // Prints resulting displacement vectors and similarity measures
+  for(unsigned int n = 0; n < displacements->GetNumberOfPoints(); n++)
+    {
+    std::cout << "\t" << n << ". "
+              << displacements->GetPoint(n)
+              << " Displacement=" << displacements->GetPointData()->ElementAt(n)
+              << " Similarity=" << similarities->GetPointData()->ElementAt(n)
+              << std::endl;
+    }
 
   return EXIT_SUCCESS;
 }
 
-void CreateImage(ImageType::Pointer image, const unsigned int x)
+void CreateImage(ImageType::Pointer image, const unsigned int margin)
 {
   // Allocate empty image
   itk::Index<2> start; start.Fill(0);
@@ -70,17 +92,18 @@ void CreateImage(ImageType::Pointer image, const unsigned int x)
   ImageType::RegionType region(start, size);
   image->SetRegions(region);
   image->Allocate();
-  image->FillBuffer(0);
+  image->FillBuffer(30);
 
-  // Make a white square
-  for(unsigned int r = x; r < x+20; r++)
+  // Make a square in the middle of the image
+  for(unsigned int r = margin; r < 100-margin; r++)
     {
-    for(unsigned int c = 40; c < 60; c++)
+    for(unsigned int c = margin; c < 100-margin; c++)
       {
       ImageType::IndexType pixelIndex;
       pixelIndex[0] = r;
       pixelIndex[1] = c;
-      image->SetPixel(pixelIndex, 255);
+      image->SetPixel(pixelIndex, 225);
       }
     }
 }
+
